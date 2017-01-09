@@ -45,11 +45,11 @@ div.row button{
 
 div.animated-item{
     position: relative;
-    animation-name: scroll;
-    left: -20000px;
+    /* animation-name: scroll; */
+    left: 0px;
     height: 0px;
     /* animation-duration: 8s; */
     /* animation-delay: 2s; */
-    animation-iteration-count: infinite;
-    animation-timing-function: linear;
+    /* animation-iteration-count: infinite; */
+    /* animation-timing-function: linear; */
 }
