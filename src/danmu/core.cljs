@@ -12,58 +12,72 @@
 
 (defonce dm-items (local-storage (atom []) :dm-items))
 
+(defn rand-key []
+  (str (.random js/Math)))
+
+(defn rand-time
+  "this controls the speed of danmu"
+  []
+  (+ 5 (rand-int 40)))
+
+(defn rand-top []
+  (rand-nth (range 10 280)))
+
 (defn gen-animate-item [item]
   {:item item
+   :key (rand-key)
    :color (str "rgb(" (rand-int 255) "," (rand-int 255) "," (rand-int 255) ")")
-   :top (rand-nth (range 10 280))
-   :time (+ 5 (rand-int 15))})
+   :top (atom (rand-top))
+   :left (atom 0)
+   :time (atom (rand-time))})
 
 (defonce displayed-items (atom (map gen-animate-item @dm-items)))
 (defonce msg-store (atom nil))
 (defn add-item []
-  (when-not (s/blank? @msg-store)
-    (swap! dm-items conj @msg-store)
+  (when-let [nitem (and (not (s/blank? @msg-store)) @msg-store)]
+    (swap! dm-items conj nitem)
+    (swap! displayed-items conj (gen-animate-item nitem))
     (reset! msg-store nil)))
 
-(defn- -animated-item []
-  (fn [{:keys [item time top color]}]
-    [:div.animated-item
-     {:style
-      {:animation-duration (str time "s")
-       :top (str top "px")
-       :color color
-       ;; :animation-delay (str (rand-int 5) "s")
-       }}
-     item]))
+(defn clear-all! []
+  (reset! displayed-items [])
+  (reset! dm-items []))
 
-(defn animated-item []
-  (let [cx (atom 0)]
-    (fn [{:keys [item time top color]}]
-      [:div.animated-item
-       [:svg
-        {:width 800
-         :height 300
-         ;;:color color
-         }
-        [anim/interval #(swap! cx inc) 10]
-        [:svg
-         [:text {:x @cx :y top} item]]]])))
+(defn item-exist? [key]
+  (some #(= (:key %) key) @displayed-items))
 
-#_(let [cx (atom 0)
-      ;;cx (anim/interpolate-to x)
-      ]
-  (fn []
-    [:svg
-     {:width 560
-      :height 120}
-     [anim/interval #(swap! cx inc) 10]
-     [:svg
-      [:text {:x @cx :y 100} "hi"]]]))
+(defn animated-item [{:keys [item time top color left top key]}]
+  (let [update-x (fn [x] (let [nx (inc x)]
+                           (if (> nx 800)
+                             (do
+                               (reset! time (rand-time))
+                               (reset! top (rand-top))
+                               0)
+                             nx)))
+        loop-start (atom true)
+        looper (fn []
+                 (go-loop []
+                   (when (and @loop-start (item-exist? key))
+                     (swap! left update-x)
+                     (<! (timeout @time))
+                     (recur))))]
+    (reagent/create-class
+     {:component-did-mount #(looper)
+      :component-will-unmount #(reset! loop-start nil)
+      :reagent-render (fn [{:keys [item time top color left top]}]
+                        [:div.animated-item
+                         [:svg
+                          {:width 800
+                           :height 300
+                           :fill color}
+                          ;;[anim/interval #(swap! left update-x) @time]
+                          [:svg
+                           [:text {:x @left :y @top} item]]]])})))
 
 (defn display-dm-items []
   [:div.board
-   (for [aitem @displayed-items]
-     ^{:key (.random js/Math)}
+   (for [{:keys [key] :as aitem} @displayed-items]
+     ^{:key key}
      [animated-item aitem])])
 
 (defn my-app []
@@ -75,10 +89,10 @@
       [:input.msg {:type :text :value @msg-store :on-change #(reset! msg-store (-> % .-target .-value))}]]
      [:div.row
       [:button {:type :button :on-click add-item} "发送"]
-      [:button {:type :button} "清屏"]]]))
+      [:button {:type :button :on-click clear-all!} "清屏"]]]))
 
 (defn main []
-    (reagent/render [#'my-app] (.getElementById js/document "app")))
+  (reagent/render [#'my-app] (.getElementById js/document "app")))
 
 (main)
 
