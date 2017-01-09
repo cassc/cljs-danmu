@@ -1,0 +1,55 @@
+@import url('https://fonts.googleapis.com/css?family=Alfa+Slab+One|VT323|Oswald');
+
+body{
+    margin-top: 50px;
+    text-align: center;
+    font-family: sans-serif;
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Chrome/Safari/Opera */
+    -khtml-user-select: none; /* Konqueror */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; 
+}
+
+
+div.board{
+    display: inline-block;
+    border: 2px solid black;
+    border-radius: 5px;
+    width: 800px;
+    height: 300px;
+}
+
+div.row{
+    margin-top: 20px;
+}
+
+input.msg{
+    width:300px;
+    height: 30px;
+    border-radius: 5px;
+}
+
+div.row button{
+    width: 80px;
+    height: 30px;
+    margin: 5px;
+    border-radius: 5px;
+}
+
+@keyframes scroll{
+    from{left: -380px;}
+    to{left: 380px;}
+}
+
+div.animated-item{
+    position: relative;
+    animation-name: scroll;
+    left: -20000px;
+    height: 0px;
+    /* animation-duration: 8s; */
+    /* animation-delay: 2s; */
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
