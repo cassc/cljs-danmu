@@ -6,7 +6,7 @@
                  [org.clojure/clojurescript "1.9.293"]
                  [org.clojure/core.async "0.2.395"]
                  [alandipert/storage-atom "2.0.1" ]
-                 [reagent "0.5.1"]
+                 ;; [reagent "0.5.1"]
                  [reanimated "0.5.0"]]
 
   :plugins [[lein-cljsbuild "1.1.4"

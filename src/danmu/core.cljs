@@ -11,6 +11,8 @@
 (enable-console-print!)
 
 (defonce dm-items (local-storage (atom []) :dm-items))
+(defonce displayed-items (atom []))
+(defonce msg-store (atom nil))
 
 (defn rand-key []
   (str (.random js/Math)))
@@ -31,8 +33,9 @@
    :left (atom 0)
    :time (atom (rand-time))})
 
-(defonce displayed-items (atom (map gen-animate-item @dm-items)))
-(defonce msg-store (atom nil))
+(defn load-as-displayed-items! []
+  (reset! displayed-items (mapv gen-animate-item @dm-items)))
+
 (defn add-item []
   (when-let [nitem (and (not (s/blank? @msg-store)) @msg-store)]
     (swap! dm-items conj nitem)
@@ -88,10 +91,11 @@
      [:div.row
       [:input.msg {:type :text :value @msg-store :on-change #(reset! msg-store (-> % .-target .-value))}]]
      [:div.row
-      [:button {:type :button :on-click add-item} "发送"]
-      [:button {:type :button :on-click clear-all!} "清屏"]]]))
+      [:button {:type :button :on-click add-item} "Send"]
+      [:button {:type :button :on-click clear-all!} "Clear"]]]))
 
 (defn main []
+  (load-as-displayed-items!)
   (reagent/render [#'my-app] (.getElementById js/document "app")))
 
 (main)
